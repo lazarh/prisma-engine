@@ -51,17 +51,24 @@ git clone https://github.com/lazarh/prisma-engine.git
 cd prisma-engine
 
 # Run the build script
-chmod +x build.sh
-./build.sh
+chmod +x build-and-release.sh
+./build-and-release.sh
 ```
 
 The script will:
 1. Install Rust if needed
 2. Clone prisma-engines
-3. Build all 4 engine binaries
-4. Output to ./engines/
+3. Build all 4 engine binaries (~1-2 hours)
+4. Run prisma generate to build Node-API library
+5. Create a zip file: `prisma-engines-6.7.0-armv7.zip`
 
-### Cross-compilation
+### Upload to GitHub
+
+1. Go to https://github.com/lazarh/prisma-engine/releases
+2. Create a new release
+3. Upload the zip file
+
+## Cross-compilation
 
 Use Docker with QEMU:
 

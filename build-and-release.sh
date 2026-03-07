@@ -1,6 +1,6 @@
 #!/bin/bash
-# Build and release script for Prisma engines
-# This script builds all engines and creates a GitHub release
+# Build script for Prisma engines for armv7
+# This script builds all engines and creates a zip file
 
 set -e
 
@@ -9,8 +9,6 @@ cd "$SCRIPT_DIR"
 
 PRISMA_VERSION=${PRISMA_VERSION:-6.7.0}
 OUTPUT_DIR=${OUTPUT_DIR:-./engines}
-REPO_OWNER=${REPO_OWNER:-lazarh}
-REPO_NAME=${REPO_NAME:-prisma-engine}
 
 echo "=========================================="
 echo "Prisma Engine Builder for armv7"
@@ -24,24 +22,6 @@ echo "Running on architecture: ${ARCH}"
 
 if [ "$ARCH" != "armv7l" ] && [ "$ARCH" != "arm" ]; then
     echo "Warning: Not running on armv7! Cross-compilation may not produce working binaries."
-    echo "Press Ctrl+C to abort, or Enter to continue..."
-    read
-fi
-
-# Check for GitHub CLI
-if ! command -v gh &> /dev/null; then
-    echo "Installing GitHub CLI..."
-    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-    sudo apt-get update
-    sudo apt-get install -y gh
-fi
-
-# Check authentication
-echo "Checking GitHub authentication..."
-if ! gh auth status &> /dev/null; then
-    echo "Please authenticate with GitHub:"
-    gh auth login
 fi
 
 # Install Rust if needed
@@ -49,11 +29,6 @@ if ! command -v cargo &> /dev/null; then
     echo "Installing Rust..."
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     source "$HOME/.cargo/env"
-fi
-
-# Add armv7 target if on aarch64 or x86_64
-if [ "$ARCH" = "aarch64" ]; then
-    rustup target add armv7-unknown-linux-gnueabihf || true
 fi
 
 # Create output directory
@@ -144,42 +119,8 @@ cd ..
 
 echo "Created: ${RELEASE_FILE}"
 
-# Create GitHub release
-echo ""
-echo "=========================================="
-echo "Creating GitHub release..."
-echo "=========================================="
-
-# Check if release exists
-if gh release view ${PRISMA_VERSION} --repo ${REPO_OWNER}/${REPO_NAME} &> /dev/null; then
-    echo "Release ${PRISMA_VERSION} already exists. Deleting..."
-    gh release delete ${PRISMA_VERSION} --repo ${REPO_OWNER}/${REPO_NAME} --yes
-fi
-
-# Create release
-gh release create ${PRISMA_VERSION} \
-    --title "Prisma ${PRISMA_VERSION} for armv7" \
-    --notes "Precompiled Prisma engines for 32-bit ARM (armv7).
-
-## Files included:
-$(ls -1 ${OUTPUT_DIR} | sed 's/^/- /')
-
-## Usage:
-Download the zip and extract to your project directory, then set environment variables:
-\`\`\`bash
-export PRISMA_QUERY_ENGINE_BINARY=./query-engine
-export PRISMA_MIGRATION_ENGINE_BINARY=./migration-engine
-export PRISMA_INTROSPECTION_ENGINE_BINARY=./introspection-engine
-export PRISMA_FMT_BINARY=./prisma-fmt
-export PRISMA_QUERY_ENGINE_LIBRARY=./libquery_engine_napi.so.node
-\`\`\`
-
-Built on: $(date)" \
-    --repo ${REPO_OWNER}/${REPO_NAME} \
-    ${RELEASE_FILE}
-
 echo ""
 echo "=========================================="
 echo "Done!"
 echo "=========================================="
-echo "Release URL: https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/${PRISMA_VERSION}"
+echo "Upload ${RELEASE_FILE} to GitHub Releases"
