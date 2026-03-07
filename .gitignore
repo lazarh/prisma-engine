@@ -3,3 +3,7 @@ prisma-engines/
 engines/
 *.tgz
 .env
+node_modules/
+.prisma/
+*.db
+*.db-journal
