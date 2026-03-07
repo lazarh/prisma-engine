@@ -1,0 +1,9 @@
+{
+  "name": "prisma-engine",
+  "version": "6.7.0",
+  "description": "Precompiled Prisma engines for armv7 (32-bit ARM)",
+  "repository": "github:lazarh/prisma-engine",
+  "author": "lazarh",
+  "license": "Apache-2.0",
+  "private": true
+}

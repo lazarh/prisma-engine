@@ -1,0 +1,5 @@
+target/
+prisma-engines/
+engines/
+*.tgz
+.env
