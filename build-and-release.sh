@@ -1,19 +1,30 @@
 #!/bin/bash
 # Build script for Prisma engines for armv7
 # This script builds all engines and creates a zip file
+#
+# Usage:
+#   ./build-and-release.sh                    # Build in current directory
+#   BUILD_DIR=/mnt/sdcard/build ./build-and-release.sh   # Build on SD card
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+
+# Allow building in a different directory (useful for devices with limited / space)
+BUILD_DIR=${BUILD_DIR:-$SCRIPT_DIR}
+
+# Create BUILD_DIR if it doesn't exist
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
 
 PRISMA_VERSION=${PRISMA_VERSION:-6.7.0}
-OUTPUT_DIR=${OUTPUT_DIR:-./engines}
+OUTPUT_DIR=${OUTPUT_DIR:-$BUILD_DIR/engines}
 
 echo "=========================================="
 echo "Prisma Engine Builder for armv7"
 echo "=========================================="
 echo "Version: ${PRISMA_VERSION}"
+echo "Build directory: ${BUILD_DIR}"
 echo ""
 
 # Check if we're on armv7
@@ -118,6 +129,7 @@ zip -r ../${RELEASE_FILE} *
 cd ..
 
 echo "Created: ${RELEASE_FILE}"
+echo "Location: ${BUILD_DIR}/${RELEASE_FILE}"
 
 echo ""
 echo "=========================================="
