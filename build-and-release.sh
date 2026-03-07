@@ -35,6 +35,12 @@ if [ "$ARCH" != "armv7l" ] && [ "$ARCH" != "arm" ]; then
     echo "Warning: Not running on armv7! Cross-compilation may not produce working binaries."
 fi
 
+# Install build dependencies if needed
+if ! command -v cc &> /dev/null; then
+    echo "Installing build tools..."
+    apt-get update && apt-get install -y build-essential pkg-config libssl-dev
+fi
+
 # Install Rust if needed (minimal install - armv7 only)
 if ! command -v cargo &> /dev/null; then
     echo "Installing Rust (armv7 only)..."
