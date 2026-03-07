@@ -35,11 +35,15 @@ if [ "$ARCH" != "armv7l" ] && [ "$ARCH" != "arm" ]; then
     echo "Warning: Not running on armv7! Cross-compilation may not produce working binaries."
 fi
 
-# Install Rust if needed
+# Install Rust if needed (minimal install - armv7 only)
 if ! command -v cargo &> /dev/null; then
-    echo "Installing Rust..."
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    echo "Installing Rust (armv7 only)..."
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
     source "$HOME/.cargo/env"
+    rustup target add armv7-unknown-linux-gnueabihf
+else
+    # Ensure armv7 target is installed
+    rustup target add armv7-unknown-linux-gnueabihf 2>/dev/null || true
 fi
 
 # Create output directory
