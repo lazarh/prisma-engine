@@ -176,9 +176,15 @@ echo "=========================================="
 echo "Creating release archive..."
 echo "=========================================="
 
-RELEASE_FILE="prisma-engines-${PRISMA_VERSION}-armv7.zip"
 cd ${OUTPUT_DIR}
-zip -r ../${RELEASE_FILE} *
+if command -v zip &> /dev/null; then
+    RELEASE_FILE="prisma-engines-${PRISMA_VERSION}-armv7.zip"
+    zip -r ../${RELEASE_FILE} *
+else
+    echo "zip not found; using tar.gz instead"
+    RELEASE_FILE="prisma-engines-${PRISMA_VERSION}-armv7.tar.gz"
+    tar -czf ../${RELEASE_FILE} *
+fi
 cd ..
 
 echo "Created: ${RELEASE_FILE}"
