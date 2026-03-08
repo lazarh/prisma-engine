@@ -139,23 +139,28 @@ echo "=========================================="
 echo "Building Node-API library..."
 echo "=========================================="
 
-# Install Node.js dependencies for prisma generate
-if [ ! -d node_modules ]; then
-    echo "Installing npm dependencies..."
-    npm install
-fi
-
-# Generate Prisma client to get Node-API library
-echo "Running prisma generate..."
-npx prisma generate
-
-# Copy Node-API library
-if [ -f node_modules/.prisma/client/runtime/libquery_engine_napi.so.node ]; then
-    cp node_modules/.prisma/client/runtime/libquery_engine_napi.so.node ${OUTPUT_DIR}/
-    echo "Copied libquery_engine_napi.so.node"
+if ! command -v npm &> /dev/null; then
+    echo "Warning: npm not found — skipping Node-API library build."
+    echo "Install Node.js and re-run if you need libquery_engine_napi.so.node"
 else
-    echo "Warning: libquery_engine_napi.so.node not found!"
-    echo "You may need to install @prisma/client and run prisma generate"
+    # Install Node.js dependencies for prisma generate
+    if [ ! -d node_modules ]; then
+        echo "Installing npm dependencies..."
+        npm install
+    fi
+
+    # Generate Prisma client to get Node-API library
+    echo "Running prisma generate..."
+    npx prisma generate
+
+    # Copy Node-API library
+    if [ -f node_modules/.prisma/client/runtime/libquery_engine_napi.so.node ]; then
+        cp node_modules/.prisma/client/runtime/libquery_engine_napi.so.node ${OUTPUT_DIR}/
+        echo "Copied libquery_engine_napi.so.node"
+    else
+        echo "Warning: libquery_engine_napi.so.node not found!"
+        echo "You may need to install @prisma/client and run prisma generate"
+    fi
 fi
 
 # List all engines
