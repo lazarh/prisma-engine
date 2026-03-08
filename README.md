@@ -43,7 +43,42 @@ docker run -e PRISMA_QUERY_ENGINE_LIBRARY=/app/engines/libquery_engine_napi.so.n
 
 ## Building from Source
 
-### On Cubieboard4 (native armv7)
+### Option 1: QEMU ARMv7 VM (recommended for x86_64 hosts)
+
+This is the easiest way to build on a regular computer using QEMU emulation.
+
+**VM Specs:** ARMv7 (virt machine), 4096 MB RAM, 8 CPUs
+
+```bash
+# 1. Download Debian ARMhf netboot files
+wget https://deb.debian.org/debian/dists/bookworm/main/installer-armhf/current/images/netboot/vmlinuz
+wget https://deb.debian.org/debian/dists/bookworm/main/installer-armhf/current/images/netboot/initrd.gz
+
+# 2. Create disk image
+qemu-img create -f qcow2 debian-bookworm-armhf.qcow2 20G
+
+# 3. Start VM with installer
+./start-qemu.sh debian-bookworm-armhf.qcow2
+```
+
+In the VM installer:
+- Connect via SSH: `ssh -p 2222 root@localhost`
+- Install build dependencies:
+  ```bash
+  apt-get update && apt-get install -y build-essential pkg-config libssl-dev git curl
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  source ~/.cargo/env
+  rustup target add armv7-unknown-linux-gnueabihf
+  ```
+
+**4. Run the build:**
+```bash
+git clone https://github.com/lazarh/prisma-engine.git
+cd prisma-engine
+./build-and-release.sh
+```
+
+### Option 2: Native build on armv7 device
 
 ```bash
 # Clone this repository
