@@ -27,7 +27,18 @@ echo "Version: ${PRISMA_VERSION}"
 echo "Build directory: ${BUILD_DIR}"
 echo ""
 
-# Check if we're on armv7
+# Build with limited parallelism to reduce memory usage
+export CARGO_BUILD_JOBS=2
+export MAKEFLAGS="-j2"
+
+# Create swap file if needed (building prisma-engines needs lots of memory)
+if [ ! -f /swapfile ]; then
+    echo "Creating swap file..."
+    fallocate -l 2G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=2048
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+fi
 ARCH=$(uname -m)
 echo "Running on architecture: ${ARCH}"
 
