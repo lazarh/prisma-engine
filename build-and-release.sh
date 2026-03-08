@@ -91,8 +91,21 @@ cargo build --release -p query-engine
 cp target/release/query-engine ${OUTPUT_DIR}
 
 echo "Building migration-engine..."
-cargo build --release -p migration-engine
-cp target/release/migration-engine ${OUTPUT_DIR}
+# Try to build the migration-engine package if it exists in the workspace; otherwise build schema-engine-cli and copy/rename its binary as a fallback.
+if cargo metadata --no-deps --format-version 1 2>/dev/null | grep -q '"name": "migration-engine"'; then
+    cargo build --release -p migration-engine
+    cp target/release/migration-engine ${OUTPUT_DIR}
+else
+    echo "Package 'migration-engine' not found; building 'schema-engine-cli' as fallback..."
+    # schema-engine-cli builds a binary named 'schema-engine'
+    cargo build --release -p schema-engine-cli
+    if [ -f target/release/schema-engine ]; then
+        cp target/release/schema-engine ${OUTPUT_DIR}/migration-engine
+    else
+        echo "ERROR: schema-engine binary not found after build"
+        exit 1
+    fi
+fi
 
 echo "Building introspection-engine..."
 cargo build --release -p introspection-engine
