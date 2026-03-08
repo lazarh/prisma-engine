@@ -92,7 +92,7 @@ cp target/release/query-engine ${OUTPUT_DIR}
 
 echo "Building migration-engine..."
 # Try to build the migration-engine package if it exists in the workspace; otherwise build schema-engine-cli and copy/rename its binary as a fallback.
-if cargo metadata --no-deps --format-version 1 2>/dev/null | grep -q '"name": "migration-engine"'; then
+if cargo pkgid migration-engine 2>/dev/null; then
     cargo build --release -p migration-engine
     cp target/release/migration-engine ${OUTPUT_DIR}
 else
@@ -108,8 +108,22 @@ else
 fi
 
 echo "Building introspection-engine..."
-cargo build --release -p introspection-engine
-cp target/release/introspection-engine ${OUTPUT_DIR}
+# In newer Prisma versions, introspection-engine was merged into schema-engine-cli.
+if cargo pkgid introspection-engine 2>/dev/null; then
+    cargo build --release -p introspection-engine
+    cp target/release/introspection-engine ${OUTPUT_DIR}
+else
+    echo "Package 'introspection-engine' not found; schema-engine-cli covers introspection in this version."
+    if [ -f ${OUTPUT_DIR}/migration-engine ]; then
+        cp ${OUTPUT_DIR}/migration-engine ${OUTPUT_DIR}/introspection-engine
+        echo "Copied schema-engine binary as introspection-engine"
+    elif [ -f target/release/schema-engine ]; then
+        cp target/release/schema-engine ${OUTPUT_DIR}/introspection-engine
+        echo "Copied schema-engine binary as introspection-engine"
+    else
+        echo "Warning: Could not create introspection-engine alias; schema-engine binary not found"
+    fi
+fi
 
 echo "Building prisma-fmt..."
 cargo build --release -p prisma-fmt
