@@ -88,19 +88,19 @@ echo "=========================================="
 
 echo "Building query-engine..."
 cargo build --release -p query-engine
-cp target/release/query-engine ../${OUTPUT_DIR}/
+cp target/release/query-engine ${OUTPUT_DIR}
 
 echo "Building migration-engine..."
 cargo build --release -p migration-engine
-cp target/release/migration-engine ../${OUTPUT_DIR}/
+cp target/release/migration-engine ${OUTPUT_DIR}
 
 echo "Building introspection-engine..."
 cargo build --release -p introspection-engine
-cp target/release/introspection-engine ../${OUTPUT_DIR}/
+cp target/release/introspection-engine ${OUTPUT_DIR}
 
 echo "Building prisma-fmt..."
 cargo build --release -p prisma-fmt
-cp target/release/prisma-fmt ../${OUTPUT_DIR}/
+cp target/release/prisma-fmt ${OUTPUT_DIR}
 
 cd ..
 
