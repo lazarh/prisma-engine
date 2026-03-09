@@ -190,8 +190,33 @@ cd ..
 echo "Created: ${RELEASE_FILE}"
 echo "Location: ${BUILD_DIR}/${RELEASE_FILE}"
 
+# Publish release to GitHub
+echo ""
+echo "=========================================="
+echo "Publishing GitHub Release..."
+echo "=========================================="
+
+if ! command -v gh &> /dev/null; then
+    echo "Warning: gh CLI not found — skipping GitHub Release publish."
+    echo "Install the GitHub CLI (https://cli.github.com) and re-run, or upload ${RELEASE_FILE} manually."
+else
+    TAG="v${PRISMA_VERSION}"
+    RELEASE_NOTES="Precompiled Prisma engines ${PRISMA_VERSION} for armv7 (32-bit ARM Linux)"
+
+    if gh release view "${TAG}" &> /dev/null; then
+        echo "Release ${TAG} already exists — uploading asset..."
+        gh release upload "${TAG}" "${RELEASE_FILE}" --clobber
+    else
+        echo "Creating release ${TAG}..."
+        gh release create "${TAG}" "${RELEASE_FILE}" \
+            --title "Prisma Engines ${PRISMA_VERSION} (armv7)" \
+            --notes "${RELEASE_NOTES}"
+    fi
+
+    echo "Published: $(gh release view "${TAG}" --json url -q .url)"
+fi
+
 echo ""
 echo "=========================================="
 echo "Done!"
 echo "=========================================="
-echo "Upload ${RELEASE_FILE} to GitHub Releases"
