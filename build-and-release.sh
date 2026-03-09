@@ -203,17 +203,29 @@ else
     TAG="v${PRISMA_VERSION}"
     RELEASE_NOTES="Precompiled Prisma engines ${PRISMA_VERSION} for armv7 (32-bit ARM Linux)"
 
-    if gh release view "${TAG}" &> /dev/null; then
-        echo "Release ${TAG} already exists — uploading asset..."
-        gh release upload "${TAG}" "${RELEASE_FILE}" --clobber
-    else
-        echo "Creating release ${TAG}..."
-        gh release create "${TAG}" "${RELEASE_FILE}" \
-            --title "Prisma Engines ${PRISMA_VERSION} (armv7)" \
-            --notes "${RELEASE_NOTES}"
-    fi
+    # Resolve the GitHub repo from the script's own git remote so this works
+    # even when BUILD_DIR is on a separate filesystem with no git repo.
+    GH_REPO=$(git -C "${SCRIPT_DIR}" remote get-url origin 2>/dev/null \
+        | sed -E 's|.*github\.com[:/]([^/]+/[^/]+?)(\.git)?$|\1|')
 
-    echo "Published: $(gh release view "${TAG}" --json url -q .url)"
+    if [ -z "${GH_REPO}" ]; then
+        echo "Warning: could not determine GitHub repo from git remote — skipping publish."
+        echo "Upload ${RELEASE_FILE} manually to GitHub Releases."
+    else
+        echo "Repository: ${GH_REPO}"
+        if gh release view "${TAG}" --repo "${GH_REPO}" &> /dev/null; then
+            echo "Release ${TAG} already exists — uploading asset..."
+            gh release upload "${TAG}" "${RELEASE_FILE}" --repo "${GH_REPO}" --clobber
+        else
+            echo "Creating release ${TAG}..."
+            gh release create "${TAG}" "${RELEASE_FILE}" \
+                --repo "${GH_REPO}" \
+                --title "Prisma Engines ${PRISMA_VERSION} (armv7)" \
+                --notes "${RELEASE_NOTES}"
+        fi
+
+        echo "Published: $(gh release view "${TAG}" --repo "${GH_REPO}" --json url -q .url)"
+    fi
 fi
 
 echo ""
